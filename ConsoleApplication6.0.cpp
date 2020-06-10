@@ -5,9 +5,6 @@
 #include < stdio.h >
 #include < string.h >
 #include<stdlib.h>
-#define STUD_N 31
-#define COURSE_N 7
-#define NAME_N 15
 struct node
 {
 	char name[100];
@@ -15,6 +12,7 @@ struct node
 	int menshu;
 	double chengji[10];
 	double zongfen;
+	double pingjun;
 };
 typedef struct node sb;
 void ReadScore(sb score[], int n, int l);
@@ -28,8 +26,8 @@ void SeachbyID(sb score[], int n, int l);
 void SeachbyNAME(sb score[], int n, int l);
 void Analysis(sb score[], int n, int l);
 void List(sb score[], int n, int l);
-void WtoFile(sb score[],int n);
-int RfromFile(sb score[]);
+void WtoFile(sb score[],int n,int l);
+void RfromFile(sb score[],int n,int l);
 int cmp1(const void* a, const void* b);
 int cmp2(const void* a, const void* b);
 int cmp3(const void* a, const void* b);
@@ -46,7 +44,7 @@ int main()
 	scanf("%d", &l);
 	int m;
 	do {
-		printf("1. Input record\n2. Caculate total and average score of every course \n3. Caculate total and average score of every student \n4. Sort in descending order by total score of every student\n5. Sort in ascending order by total score of every student\n6. Sort in ascending order by number\n7. Sort in dictionary order by name\n8. Search by number\n9. Search by name\n10. Statistic analysis for every course\n11. List record\n12. Write to file\n13.Read from file\n0.Exit\nPlease enter your choice:\n");
+		printf("1. Input record\n2. Caculate total and average score of every course \n3. Caculate total and average score of every student \n4. Sort in descending order by total score of every student\n5. Sort in ascending order by total score of every student\n6. Sort in ascending order by number\n7. Sort in dictionary order by name\n8. Search by number\n9. Search by name\n10. Statistic analysis for every course\n11. List record\n12. Write to file\n13. Read from file\n0.Exit\nPlease enter your choice:\n");
 		scanf("%d", &m);
 		switch (m) {
 		case 1:ReadScore(score, n, l); break;
@@ -58,10 +56,10 @@ int main()
 		case 7:Dictionary(score, n, l); break;
 		case 8:SeachbyID(score, n, l); break;
 		case 9:SeachbyNAME(score, n, l); break;
-		case 10:Analysis(score, l, n); break;
+		case 10:Analysis(score, n, l); break;
 		case 11:List(score, n, l); break;
-		case 12:WtoFile(score, n);
-		case 13: {n = RfromFile(score); List(score, n, l); }
+		case 12:WtoFile(score, n, l); break;
+		case 13:RfromFile(score,n,l); break;
 		case 0:return 0;
 		}
 	} while (1);
@@ -77,6 +75,7 @@ void ReadScore(sb score[], int n, int l)
 			scanf("%lf", &score[i].chengji[j]);
 			score[i].zongfen += score[i].chengji[j];
 		}
+		score[i].pingjun = score[i].zongfen / l;
 	}
 }
 void AverforCourse(sb score[], int n, int l)
@@ -129,9 +128,9 @@ void IDsize(sb score[], int n, int l)
 	qsort(score, n, sizeof(sb), cmp3);
 
 	for (int i = 0; i < n; i++) {
-		printf("%s %lf\n", score[i].name, score[i].zongfen);
+		printf("%s %.2lf\n各科成绩为：", score[i].name, score[i].zongfen);
 		for (int j = 0; j < l; j++) {
-			printf("%lf  ", score[i].chengji[j]);
+			printf("%.2lf  ", score[i].chengji[j]);
 		}
 		printf("\n");
 
@@ -141,9 +140,9 @@ void Dictionary(sb score[], int n, int l)
 {
 	qsort(score, n, sizeof(sb), cmp4);
 	for (int i = 0; i < n; i++) {
-		printf("%s %lf\n", score[i].name, score[i].zongfen);
+		printf("%s %.2lf\n各科成绩为：", score[i].name, score[i].zongfen);
 		for (int j = 0; j < l; j++) {
-			printf("%lf  ", score[i].chengji[j]);
+			printf("%.2lf  ", score[i].chengji[j]);
 		}
 		printf("\n");
 	}
@@ -160,9 +159,9 @@ void SeachbyNAME(sb score[], int n, int l)
 					mingci += 1;
 				}
 			}
-			printf("name:%s   ID:%lld  rank:%d  total score:%lf\nscore: ", score[i].name, score[i].xuehao, mingci, score[i].zongfen);
+			printf("name:%s   ID:%lld  rank:%d  total score:%.2lf\nscore: ", score[i].name, score[i].xuehao, mingci, score[i].zongfen);
 			for (int j = 0; j < l; j++) {
-				printf("%lf  ", score[i].chengji[j]);
+				printf("%.2lf  ", score[i].chengji[j]);
 			}
 			printf("\n");
 		}
@@ -180,9 +179,9 @@ void SeachbyID(sb score[], int n, int l)
 					mingci += 1;
 				}
 			}
-			printf("name:%s ID:%lld  rank:%d  total score:%lf\nscore: ", score[i].name, score[i].xuehao, mingci, score[i].zongfen);
+			printf("name:%s ID:%lld  rank:%d  total score:%.2lf\nscore: ", score[i].name, score[i].xuehao, mingci, score[i].zongfen);
 			for (int j = 0; j < l; j++) {
-				printf("%lf  ", score[i].chengji[j]);
+				printf("%.2lf  ", score[i].chengji[j]);
 			}
 			printf("\n");
 		}
@@ -206,33 +205,42 @@ void Analysis(sb score[], int n, int l)
 		}
 		printf("科目  %d\n", i + 1);
 		printf("\t%6d%6d%6d%6d%6d\n", a, b, c, d, e);
-		printf("\t%5.2f%%%5.2f%%%5.2f%%%5.2f%%%5.2f%%\n", a * 100.0 / n, b * 100.0 / n, c * 100.0 / n, d * 100.0 / n, e * 100.0 / n);
+		printf("\t%5.1f%%%5.1f%%%5.1f%%%5.1f%%%5.1f%%\n", a * 100.0 / n, b * 100.0 / n, c * 100.0 / n, d * 100.0 / n, e * 100.0 / n);
 
 	}
 }
 void List(sb score[], int n, int l)
 {
 	for (int i = 0; i < n; i++) {
-		printf("%s %lld %lf %lf\n", score[i].name, score[i].xuehao, score[i].zongfen, score[i].zongfen / n);
+		printf("%s %lld 总分：%.2lf 平均分：%.2lf\n各科成绩为：", score[i].name, score[i].xuehao, score[i].zongfen, score[i].pingjun);
 		for (int j = 0; j < l; j++) {
-			printf("%lf ", score[i].chengji[j]);
+			printf("%.2lf ", score[i].chengji[j]);
 		}
 		printf("\n");
 	}
 }
-void WtoFile(sb score[],int n)
+void WtoFile(sb score[],int n,int l)
 {
 	FILE* fp;
+	int i;
 	if ((fp = fopen("text.txt", "w")) == NULL)
 	{
 		printf("文件打开失败\n");
 		exit(0);
 	}
-	fwrite(score, sizeof(sb), n, fp);
+	for (int i = 0; i < n; i++) {
+		fprintf(fp,"%s %lld 总分：%.2lf 平均分：%.2lf 各科成绩：", score[i].name, score[i].xuehao, score[i].zongfen, score[i].zongfen / l);
+		for (int j = 0; j < l; j++) {
+			fprintf(fp, "%.2lf ", score[i].chengji[j]);
+		}
+		fprintf(fp,"\n");
+	}	
 	fclose(fp);
+	printf("数据读入成功\n");
 }
-int RfromFile(sb score[])
+void RfromFile(sb score[],int n,int l)
 {
+	char a[35][200];
 	FILE* fp;
 	int i;
 	if ((fp = fopen("text.txt", "r")) == NULL)
@@ -240,12 +248,12 @@ int RfromFile(sb score[])
 		printf("文件打开失败\n");
 		exit(0);
 	}
-	for ( i = 0; !feof(fp); i++)
+	for ( i = 0;i<n; i++)
 	{
-		fread(&score[i], sizeof(sb), 1, fp);
+		fgets(a[i],200,fp);
+		printf("%s", a[i]);
 	}
 	fclose(fp);
-	return i - 1;
 }
 int cmp1(const void* a, const void* b)
 {
